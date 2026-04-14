@@ -1,7 +1,7 @@
 use std::io::{Error, Stdout, Write, stdin, stdout};
 use termion::event::Key;
 use termion::input::TermRead;
-use termion::{clear, raw::IntoRawMode};
+use termion::{clear, cursor, raw::IntoRawMode};
 
 pub struct UI {
     options: Vec<String>,
@@ -10,10 +10,10 @@ pub struct UI {
 }
 
 impl UI {
-    pub fn new(title: &str, options: Vec<String>) -> Self {
+    pub fn new(title: &str, options: Vec<&str>) -> Self {
         UI {
             title: title.to_string(),
-            options,
+            options: options.iter().map(|s| s.to_string()).collect(),
             selected: 0,
         }
     }
@@ -27,18 +27,20 @@ impl UI {
     fn draw(&self, stdout: &mut Stdout) -> Result<(), Error> {
         self.clear(stdout)?;
 
-        write!(stdout, "{}\n", self.title)?;
-        write!(stdout, "{}\n\n", "=".repeat(self.title.len()))?;
+        write!(stdout, "{}", cursor::Goto(1, 2))?;
+
+        write!(stdout, "   {}\r\n", self.title)?;
+        write!(stdout, "   {}\r\n\r\n", "=".repeat(self.title.len()))?;
 
         for (i, option) in self.options.iter().enumerate() {
             if i == self.selected {
-                write!(stdout, " > {}\n", option)?;
+                write!(stdout, " > {}\r\n", option)?;
             } else {
-                write!(stdout, "   {}\n", option)?;
+                write!(stdout, "   {}\r\n", option)?;
             }
         }
 
-        write!(stdout, "\n\n")?;
+        write!(stdout, "\r\n\r\n")?;
         write!(
             stdout,
             "[ ↑↓ ] Navegar  |  [ Enter ] Seleccionar  |  [ Q ] Salir"
