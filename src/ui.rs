@@ -9,6 +9,12 @@ pub struct UI {
     title: String,
 }
 
+pub fn clear(stdout: &mut Stdout) -> Result<(), Error> {
+    write!(stdout, "{}", clear::All)?;
+    stdout.flush()?;
+    Ok(())
+}
+
 impl UI {
     pub fn new(title: &str, options: Vec<&str>) -> Self {
         UI {
@@ -18,14 +24,8 @@ impl UI {
         }
     }
 
-    fn clear(&self, stdout: &mut Stdout) -> Result<(), Error> {
-        write!(stdout, "{}", clear::All)?;
-        stdout.flush()?;
-        Ok(())
-    }
-
     fn draw(&self, stdout: &mut Stdout) -> Result<(), Error> {
-        self.clear(stdout)?;
+        clear(stdout)?;
 
         write!(stdout, "{}", cursor::Goto(1, 2))?;
 
@@ -74,5 +74,100 @@ impl UI {
             self.draw(&mut stdout)?;
         }
         Ok(None)
+    }
+}
+
+pub struct InputBox {
+    prompt: String,
+    value: String,
+}
+
+impl InputBox {
+    pub fn new(prompt: &str) -> Self {
+        Self {
+            prompt: prompt.to_string(),
+            value: String::new(),
+        }
+    }
+
+    fn draw(&self, stdout: &mut Stdout) -> Result<(), Error> {
+        clear(stdout)?;
+
+        write!(stdout, "{}", cursor::Goto(1, 2))?;
+
+        write!(stdout, "   {}\r\n", self.prompt)?;
+        write!(stdout, "   {}", "=".repeat(self.prompt.len()))?;
+
+        write!(stdout, "\r\n\r\n")?;
+        write!(stdout, "   {}", self.value)?;
+
+        stdout.flush()?;
+        Ok(())
+    }
+
+    pub fn show(&mut self) -> Result<String, Error> {
+        let mut stdout = stdout().into_raw_mode()?;
+
+        self.draw(&mut stdout)?;
+
+        for key in stdin().keys() {
+            match key? {
+                Key::Char('\n') => return Ok(self.value.clone()),
+                Key::Char(c) => self.value.push(c),
+                Key::Backspace => {
+                    self.value.pop();
+                }
+                _ => {}
+            }
+            self.draw(&mut stdout)?;
+        }
+        Ok(self.value.clone())
+    }
+}
+
+pub struct MessageBox {
+    title: String,
+    message: String,
+}
+
+impl MessageBox {
+    pub fn new(title: &str, message: &str) -> Self {
+        Self {
+            title: title.to_string(),
+            message: message.to_string(),
+        }
+    }
+
+    fn draw(&self, stdout: &mut Stdout) -> Result<(), Error> {
+        clear(stdout)?;
+
+        write!(stdout, "{}", cursor::Goto(1, 2))?;
+
+        write!(stdout, "   {}\r\n", self.title)?;
+        write!(stdout, "   {}", "=".repeat(self.title.len()))?;
+
+        write!(stdout, "\r\n\r\n")?;
+        write!(stdout, "   {}", self.message)?;
+
+        write!(stdout, "\r\n\r\n")?;
+        write!(stdout, "   [ Presione cualquier tecla para continuar ]")?;
+
+        stdout.flush()?;
+        Ok(())
+    }
+
+    pub fn show(&mut self) -> Result<(), Error> {
+        let mut stdout = stdout().into_raw_mode()?;
+
+        self.draw(&mut stdout)?;
+
+        for key in stdin().keys() {
+            match key? {
+                Key::Char(_) => return Ok(()),
+                _ => {}
+            }
+            self.draw(&mut stdout)?;
+        }
+        Ok(())
     }
 }
