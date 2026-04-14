@@ -23,7 +23,7 @@ fn main() {
                 //1 => parenthesis::run(),
                 //2 => game_of_life::run(),
                 3 => unit_convert::run(),
-                //4 => pass_gen::run(),
+                4 => pass_gen::run(),
                 _ => unreachable!(),
             },
             Ok(None) => break,
