@@ -2,7 +2,7 @@ use std::io::{Error, ErrorKind};
 
 use crate::ui::{InputBox, MessageBox, UI};
 
-struct UnitOption {
+pub struct UnitOption {
     name: String,
     factor: f64,
     offset: f64,
@@ -111,8 +111,8 @@ pub fn run() {
 
 fn iniciar_conversion(convert: UnitConvert, from_id: usize, to_id: usize) -> Result<f64, Error> {
     let mut ui_value = InputBox::new(&format!(
-        "Convertir de {} a {}",
-        convert.options[from_id].name, convert.options[to_id].name
+        "[{}] Convertir de {} a {}",
+        convert.category, convert.options[from_id].name, convert.options[to_id].name
     ));
     let value_str = ui_value.show()?;
     let value = value_str

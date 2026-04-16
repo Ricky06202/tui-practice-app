@@ -1,4 +1,4 @@
-use std::io::{Error, Stdout, Write, stdin, stdout};
+use std::io::{Error, ErrorKind, Stdout, Write, stdin, stdout};
 use termion::event::Key;
 use termion::input::TermRead;
 use termion::{clear, cursor, raw::IntoRawMode};
@@ -217,6 +217,6 @@ impl SimulationBox {
         for key in stdin().keys() {
             return Ok(key?);
         }
-        Err(Error::new(std::io::ErrorKind::Other, "Error al leer tecla"))
+        Err(Error::new(ErrorKind::Other, "Error al leer tecla"))
     }
 }
