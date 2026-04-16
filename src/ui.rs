@@ -43,7 +43,7 @@ impl UI {
         write!(stdout, "\r\n\r\n")?;
         write!(
             stdout,
-            "[ ↑↓ ] Navegar  |  [ Enter ] Seleccionar  |  [ Q ] Salir"
+            "[ ↑↓ ] Navegar  |  [ Enter ] Seleccionar  |  [ Q ] Salir\r\n"
         )?;
 
         stdout.flush()?;
@@ -147,7 +147,9 @@ impl MessageBox {
         write!(stdout, "   {}", "=".repeat(self.title.len()))?;
 
         write!(stdout, "\r\n\r\n")?;
-        write!(stdout, "   {}", self.message)?;
+        for line in self.message.lines() {
+            write!(stdout, "   {}\r\n", line)?;
+        }
 
         write!(stdout, "\r\n\r\n")?;
         write!(stdout, "   [ Presione cualquier tecla para continuar ]")?;
@@ -169,5 +171,52 @@ impl MessageBox {
             self.draw(&mut stdout)?;
         }
         Ok(())
+    }
+}
+
+pub struct SimulationBox {
+    title: String,
+    content: String,
+    footer: String,
+}
+
+impl SimulationBox {
+    pub fn new(title: &str, content: &str, footer: &str) -> Self {
+        Self {
+            title: title.to_string(),
+            content: content.to_string(),
+            footer: footer.to_string(),
+        }
+    }
+
+    fn draw(&self, stdout: &mut Stdout) -> Result<(), Error> {
+        clear(stdout)?;
+
+        write!(stdout, "{}", cursor::Goto(1, 2))?;
+
+        write!(stdout, "   {}\r\n", self.title)?;
+        write!(stdout, "   {}", "=".repeat(self.title.len()))?;
+
+        write!(stdout, "\r\n\r\n")?;
+        for line in self.content.lines() {
+            write!(stdout, "   {}\r\n", line)?;
+        }
+
+        write!(stdout, "\r\n\r\n")?;
+        write!(stdout, "   {}", self.footer)?;
+
+        stdout.flush()?;
+        Ok(())
+    }
+
+    pub fn show(&mut self) -> Result<Key, Error> {
+        let mut stdout = stdout().into_raw_mode()?;
+
+        self.draw(&mut stdout)?;
+
+        for key in stdin().keys() {
+            return Ok(key?);
+        }
+        Err(Error::new(std::io::ErrorKind::Other, "Error al leer tecla"))
     }
 }

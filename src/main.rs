@@ -19,9 +19,9 @@ fn main() {
         let mut ui = UI::new("Main Menu", options);
         match ui.show() {
             Ok(Some(index)) => match index {
-                //0 => magic_square::run(),
-                //1 => parenthesis::run(),
-                //2 => game_of_life::run(),
+                0 => magic_square::run(),
+                1 => parenthesis::run(),
+                2 => game_of_life::run(),
                 3 => unit_convert::run(),
                 4 => pass_gen::run(),
                 _ => unreachable!(),
